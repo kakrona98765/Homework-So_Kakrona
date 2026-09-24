@@ -1,8 +1,6 @@
 package com.example.login_form;
 
-
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.SpannableString;
@@ -24,17 +22,18 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.example.login_form.databinding.ActivityMainBinding;
+import com.example.login_form.databinding.ActivityRegisterBinding;
 
-public class MainActivity extends AppCompatActivity {
-    private ActivityMainBinding binding;
+public class RegisterActivity extends AppCompatActivity {
+
+    private ActivityRegisterBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
 
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        binding = ActivityRegisterBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.main, (v, insets) -> {
@@ -43,74 +42,100 @@ public class MainActivity extends AppCompatActivity {
             return WindowInsetsCompat.CONSUMED;
         });
 
-        binding.rootLayout.setOnClickListener(v -> hideKeyboard());
+        binding.registerLayout.setOnClickListener(v -> hideKeyboard());
         setupForgotPassword();
-        setupSignUpPrompt();
-
-        binding.btnLogin.setOnClickListener(v -> {
+        setupLoginFormPrompt();
+        //check even
+        binding.btnCreateAccount.setOnClickListener(v -> {
             hideKeyboard();
+
             if (validateInputs()) {
-                performLogin();
+                performRegister();
             }
         });
 
         binding.btnGoogle.setOnClickListener(v -> {
             hideKeyboard();
-            Toast.makeText(this, "Google Login Clicked", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Google Sign-Up Clicked", Toast.LENGTH_SHORT).show();
         });
 
         binding.btnFacebook.setOnClickListener(v -> {
             hideKeyboard();
-            Toast.makeText(this, "Facebook Login Clicked", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Facebook Sign-Up Clicked", Toast.LENGTH_SHORT).show();
         });
 
         binding.btnGithub.setOnClickListener(v -> {
             hideKeyboard();
-            Toast.makeText(this, "GitHub Login Clicked", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "GitHub Sign-Up Clicked", Toast.LENGTH_SHORT).show();
         });
-
-
     }
 
+    // check Validation
     private boolean validateInputs() {
-        String email = binding.inputEmail.getText() != null ? binding.inputEmail.getText().toString().trim() : "";
-        String password = binding.inputPassword.getText() != null ? binding.inputPassword.getText().toString() : "";
+        String email = binding.inputNewEmail.getText() != null ? binding.inputNewEmail.getText().toString().trim() : "";
+        String username = binding.inputNewUsername.getText() != null ? binding.inputNewUsername.getText().toString().trim() : "";
+        String password = binding.inputNewPassword.getText() != null ? binding.inputNewPassword.getText().toString() : "";
+        String confirmPassword = binding.inputNewConfirmPassword.getText() != null ? binding.inputNewConfirmPassword.getText().toString() : "";
 
-        // Reset Error
-        binding.tinputEmail.setError(null);
-        binding.tinputPassword.setError(null);
+        //
+        binding.inputLayoutEmail.setError(null);
+        binding.inputLayoutUsername.setError(null);
+        binding.inputLayoutPassword.setError(null);
+        binding.inputLayoutConfirmPassword.setError(null);
 
+        // 1. Email Validation
         if (email.isEmpty()) {
-            binding.tinputEmail.setError("Please enter your email");
-            binding.inputEmail.requestFocus();
+            binding.inputLayoutEmail.setError("Email is required");
+            binding.inputNewEmail.requestFocus();
             return false;
         } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            binding.tinputEmail.setError("Please enter a valid email address");
-            binding.inputEmail.requestFocus();
+            binding.inputLayoutEmail.setError("Please enter a valid email");
+            binding.inputNewEmail.requestFocus();
             return false;
         }
+
+        // 2. Username Validation
+        if (username.isEmpty()) {
+            binding.inputLayoutUsername.setError("Username is required");
+            binding.inputNewUsername.requestFocus();
+            return false;
+        } else if (username.length() < 3) {
+            binding.inputLayoutUsername.setError("Username must be at least 3 characters");
+            binding.inputNewUsername.requestFocus();
+            return false;
+        }
+
+        // 3. Password Validation
         if (password.isEmpty()) {
-            binding.tinputPassword.setError("Please enter your password");
-            binding.inputPassword.requestFocus();
+            binding.inputLayoutPassword.setError("Password is required");
+            binding.inputNewPassword.requestFocus();
             return false;
         } else if (password.length() < 3) {
-            binding.tinputPassword.setError("Password must be at least 3 characters");
-            binding.inputPassword.requestFocus();
+            binding.inputLayoutPassword.setError("Password must be at least 3 characters");
+            binding.inputNewPassword.requestFocus();
+            return false;
+        }
+
+        // 4. Confirm Password Validation
+        if (confirmPassword.isEmpty()) {
+            binding.inputLayoutConfirmPassword.setError("Please confirm your password");
+            binding.inputNewConfirmPassword.requestFocus();
+            return false;
+        } else if (!password.equals(confirmPassword)) {
+            binding.inputLayoutConfirmPassword.setError("Passwords do not match");
+            binding.inputNewConfirmPassword.requestFocus();
             return false;
         }
 
         return true;
     }
 
-    private void performLogin() {
-        Toast.makeText(this, "Login Successful!", Toast.LENGTH_SHORT).show();
-
-//         For Home Screen next time
-//         Intent intent = new Intent(MainActivity.this, HomeActivity.class);
-//         startActivity(intent);
-//         finish();
+    private void performRegister() {
+        Toast.makeText(this, "Account Created Successfully!", Toast.LENGTH_SHORT).show();
+        finish();
     }
 
+    // Prepare Text "Forgot Password"
     private void setupForgotPassword() {
         String text = getString(R.string.text_forgot_password);
         SpannableString spannable = new SpannableString(text);
@@ -119,8 +144,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(@NonNull View widget) {
                 hideKeyboard();
-                Toast.makeText(MainActivity.this, "Navigate to Forgot Password", Toast.LENGTH_SHORT).show();
-                // startActivity(new Intent(MainActivity.this, ForgotPasswordActivity.class));
+                Toast.makeText(RegisterActivity.this, "Navigate to Forgot Password", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -138,24 +162,24 @@ public class MainActivity extends AppCompatActivity {
         binding.tvForgotPassword.setHighlightColor(Color.TRANSPARENT);
     }
 
-    private void setupSignUpPrompt() {
-        String fullText = "Don't have account? Sign Up";
+    // Prepare Text " Log in"
+    private void setupLoginFormPrompt() {
+        String fullText = "Already have an account? Log in";
         SpannableString spannable = new SpannableString(fullText);
 
-        String clickableWord = "Sign Up";
+        String clickableWord = "Log in";
         int startIndex = fullText.indexOf(clickableWord);
         int endIndex = startIndex + clickableWord.length();
 
-        // color "Don't have account? "
+        // Color Text
         spannable.setSpan(new ForegroundColorSpan(Color.WHITE), 0, startIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-        // Click Event on "Sign Up"
+        // ClickableSpan for "Log in"
         ClickableSpan clickableSpan = new ClickableSpan() {
             @Override
             public void onClick(@NonNull View widget) {
                 hideKeyboard();
-                Intent intent = new Intent(MainActivity.this, RegisterActivity.class);
-                startActivity(intent);
+                finish();
             }
 
             @Override
@@ -168,11 +192,10 @@ public class MainActivity extends AppCompatActivity {
 
         spannable.setSpan(clickableSpan, startIndex, endIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-        binding.tvSignUpPrompt.setText(spannable);
-        binding.tvSignUpPrompt.setMovementMethod(LinkMovementMethod.getInstance());
-        binding.tvSignUpPrompt.setHighlightColor(Color.TRANSPARENT);
+        binding.textLoginForm.setText(spannable);
+        binding.textLoginForm.setMovementMethod(LinkMovementMethod.getInstance());
+        binding.textLoginForm.setHighlightColor(Color.TRANSPARENT);
     }
-
     // Inside your Activity
     private void hideKeyboard() {
         // Find the currently focused view, so we can grab the correct window token from it.
