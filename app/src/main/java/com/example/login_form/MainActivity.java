@@ -1,24 +1,8 @@
 package com.example.login_form;
 
-
-import android.content.Context;
-import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.text.SpannableString;
-import android.text.Spanned;
-import android.text.TextPaint;
-import android.text.method.LinkMovementMethod;
-import android.text.style.ClickableSpan;
-import android.text.style.ForegroundColorSpan;
-import android.text.style.UnderlineSpan;
-import android.util.Patterns;
-import android.view.View;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -27,14 +11,14 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.login_form.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {
-    private ActivityMainBinding binding;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
 
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.main, (v, insets) -> {
@@ -42,149 +26,5 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(insetsToApply.left, insetsToApply.top, insetsToApply.right, insetsToApply.bottom);
             return WindowInsetsCompat.CONSUMED;
         });
-
-        binding.rootLayout.setOnClickListener(v -> hideKeyboard());
-        setupForgotPassword();
-        setupSignUpPrompt();
-
-        binding.btnLogin.setOnClickListener(v -> {
-            hideKeyboard();
-            if (validateInputs()) {
-                performLogin();
-            }
-        });
-
-        binding.btnGoogle.setOnClickListener(v -> {
-            hideKeyboard();
-            Toast.makeText(this, "Google Login Clicked", Toast.LENGTH_SHORT).show();
-        });
-
-        binding.btnFacebook.setOnClickListener(v -> {
-            hideKeyboard();
-            Toast.makeText(this, "Facebook Login Clicked", Toast.LENGTH_SHORT).show();
-        });
-
-        binding.btnGithub.setOnClickListener(v -> {
-            hideKeyboard();
-            Toast.makeText(this, "GitHub Login Clicked", Toast.LENGTH_SHORT).show();
-        });
-
-
     }
-
-    private boolean validateInputs() {
-        String email = binding.inputEmail.getText() != null ? binding.inputEmail.getText().toString().trim() : "";
-        String password = binding.inputPassword.getText() != null ? binding.inputPassword.getText().toString() : "";
-
-        // Reset Error
-        binding.tinputEmail.setError(null);
-        binding.tinputPassword.setError(null);
-
-        if (email.isEmpty()) {
-            binding.tinputEmail.setError("Please enter your email");
-            binding.inputEmail.requestFocus();
-            return false;
-        } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            binding.tinputEmail.setError("Please enter a valid email address");
-            binding.inputEmail.requestFocus();
-            return false;
-        }
-        if (password.isEmpty()) {
-            binding.tinputPassword.setError("Please enter your password");
-            binding.inputPassword.requestFocus();
-            return false;
-        } else if (password.length() < 3) {
-            binding.tinputPassword.setError("Password must be at least 3 characters");
-            binding.inputPassword.requestFocus();
-            return false;
-        }
-
-        return true;
-    }
-
-    private void performLogin() {
-        Toast.makeText(this, "Login Successful!", Toast.LENGTH_SHORT).show();
-
-//         For Home Screen next time
-//         Intent intent = new Intent(MainActivity.this, HomeActivity.class);
-//         startActivity(intent);
-//         finish();
-    }
-
-    private void setupForgotPassword() {
-        String text = getString(R.string.text_forgot_password);
-        SpannableString spannable = new SpannableString(text);
-
-        ClickableSpan clickableSpan = new ClickableSpan() {
-            @Override
-            public void onClick(@NonNull View widget) {
-                hideKeyboard();
-                Toast.makeText(MainActivity.this, "Navigate to Forgot Password", Toast.LENGTH_SHORT).show();
-                // startActivity(new Intent(MainActivity.this, ForgotPasswordActivity.class));
-            }
-
-            @Override
-            public void updateDrawState(@NonNull TextPaint ds) {
-                super.updateDrawState(ds);
-                ds.setColor(getColor(R.color.primary));
-            }
-        };
-
-        spannable.setSpan(clickableSpan, 0, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        spannable.setSpan(new UnderlineSpan(), 0, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-        binding.tvForgotPassword.setText(spannable);
-        binding.tvForgotPassword.setMovementMethod(LinkMovementMethod.getInstance());
-        binding.tvForgotPassword.setHighlightColor(Color.TRANSPARENT);
-    }
-
-    private void setupSignUpPrompt() {
-        String fullText = "Don't have account? Sign Up";
-        SpannableString spannable = new SpannableString(fullText);
-
-        String clickableWord = "Sign Up";
-        int startIndex = fullText.indexOf(clickableWord);
-        int endIndex = startIndex + clickableWord.length();
-
-        // color "Don't have account? "
-        spannable.setSpan(new ForegroundColorSpan(Color.WHITE), 0, startIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-        // Click Event on "Sign Up"
-        ClickableSpan clickableSpan = new ClickableSpan() {
-            @Override
-            public void onClick(@NonNull View widget) {
-                hideKeyboard();
-                Intent intent = new Intent(MainActivity.this, RegisterActivity.class);
-                startActivity(intent);
-            }
-
-            @Override
-            public void updateDrawState(@NonNull TextPaint ds) {
-                super.updateDrawState(ds);
-                ds.setColor(getColor(R.color.primary));
-                ds.setUnderlineText(false);
-            }
-        };
-
-        spannable.setSpan(clickableSpan, startIndex, endIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-        binding.tvSignUpPrompt.setText(spannable);
-        binding.tvSignUpPrompt.setMovementMethod(LinkMovementMethod.getInstance());
-        binding.tvSignUpPrompt.setHighlightColor(Color.TRANSPARENT);
-    }
-
-    // Inside your Activity
-    private void hideKeyboard() {
-        // Find the currently focused view, so we can grab the correct window token from it.
-        View view = this.getCurrentFocus();
-
-        // If no view currently has focus, create a new one, just so we can grab a window token from it
-        if (view == null) {
-            view = new View(this);
-        }
-
-        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-    }
-
 }

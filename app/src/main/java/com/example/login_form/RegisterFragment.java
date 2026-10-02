@@ -11,73 +11,68 @@ import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.UnderlineSpan;
 import android.util.Patterns;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 
-import com.example.login_form.databinding.ActivityRegisterBinding;
+import com.example.login_form.databinding.FragmentRegisterBinding;
 
-public class RegisterActivity extends AppCompatActivity {
+public class RegisterFragment extends Fragment {
 
-    private ActivityRegisterBinding binding;
+    private FragmentRegisterBinding binding;
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        binding = FragmentRegisterBinding.inflate(inflater, container, false);
+        return binding.getRoot();
+    }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
-
-        binding = ActivityRegisterBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
-
-        ViewCompat.setOnApplyWindowInsetsListener(binding.main, (v, insets) -> {
-            Insets insetsToApply = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.ime());
-            v.setPadding(insetsToApply.left, insetsToApply.top, insetsToApply.right, insetsToApply.bottom);
-            return WindowInsetsCompat.CONSUMED;
-        });
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
         binding.registerLayout.setOnClickListener(v -> hideKeyboard());
         setupForgotPassword();
         setupLoginFormPrompt();
-        //check even
+
         binding.btnCreateAccount.setOnClickListener(v -> {
             hideKeyboard();
-
             if (validateInputs()) {
-                performRegister();
+                performRegister(v);
             }
         });
 
         binding.btnGoogle.setOnClickListener(v -> {
             hideKeyboard();
-            Toast.makeText(this, "Google Sign-Up Clicked", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Google Sign-Up Clicked", Toast.LENGTH_SHORT).show();
         });
 
         binding.btnFacebook.setOnClickListener(v -> {
             hideKeyboard();
-            Toast.makeText(this, "Facebook Sign-Up Clicked", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Facebook Sign-Up Clicked", Toast.LENGTH_SHORT).show();
         });
 
         binding.btnGithub.setOnClickListener(v -> {
             hideKeyboard();
-            Toast.makeText(this, "GitHub Sign-Up Clicked", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "GitHub Sign-Up Clicked", Toast.LENGTH_SHORT).show();
         });
     }
 
-    // check Validation
     private boolean validateInputs() {
         String email = binding.inputNewEmail.getText() != null ? binding.inputNewEmail.getText().toString().trim() : "";
         String username = binding.inputNewUsername.getText() != null ? binding.inputNewUsername.getText().toString().trim() : "";
         String password = binding.inputNewPassword.getText() != null ? binding.inputNewPassword.getText().toString() : "";
         String confirmPassword = binding.inputNewConfirmPassword.getText() != null ? binding.inputNewConfirmPassword.getText().toString() : "";
 
-        //
         binding.inputLayoutEmail.setError(null);
         binding.inputLayoutUsername.setError(null);
         binding.inputLayoutPassword.setError(null);
@@ -116,7 +111,6 @@ public class RegisterActivity extends AppCompatActivity {
             return false;
         }
 
-        // 4. Confirm Password Validation
         if (confirmPassword.isEmpty()) {
             binding.inputLayoutConfirmPassword.setError("Please confirm your password");
             binding.inputNewConfirmPassword.requestFocus();
@@ -130,12 +124,11 @@ public class RegisterActivity extends AppCompatActivity {
         return true;
     }
 
-    private void performRegister() {
-        Toast.makeText(this, "Account Created Successfully!", Toast.LENGTH_SHORT).show();
-        finish();
+    private void performRegister(View view) {
+        Toast.makeText(requireContext(), "Account Created Successfully!", Toast.LENGTH_SHORT).show();
+        Navigation.findNavController(view).popBackStack();
     }
 
-    // Prepare Text "Forgot Password"
     private void setupForgotPassword() {
         String text = getString(R.string.text_forgot_password);
         SpannableString spannable = new SpannableString(text);
@@ -144,13 +137,13 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onClick(@NonNull View widget) {
                 hideKeyboard();
-                Toast.makeText(RegisterActivity.this, "Navigate to Forgot Password", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Navigate to Forgot Password", Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void updateDrawState(@NonNull TextPaint ds) {
                 super.updateDrawState(ds);
-                ds.setColor(getColor(R.color.primary));
+                ds.setColor(ContextCompat.getColor(requireContext(), R.color.primary));
             }
         };
 
@@ -162,7 +155,6 @@ public class RegisterActivity extends AppCompatActivity {
         binding.tvForgotPassword.setHighlightColor(Color.TRANSPARENT);
     }
 
-    // Prepare Text " Log in"
     private void setupLoginFormPrompt() {
         String fullText = "Already have an account? Log in";
         SpannableString spannable = new SpannableString(fullText);
@@ -171,21 +163,19 @@ public class RegisterActivity extends AppCompatActivity {
         int startIndex = fullText.indexOf(clickableWord);
         int endIndex = startIndex + clickableWord.length();
 
-        // Color Text
         spannable.setSpan(new ForegroundColorSpan(Color.WHITE), 0, startIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-        // ClickableSpan for "Log in"
         ClickableSpan clickableSpan = new ClickableSpan() {
             @Override
             public void onClick(@NonNull View widget) {
                 hideKeyboard();
-                finish();
+                Navigation.findNavController(widget).popBackStack();
             }
 
             @Override
             public void updateDrawState(@NonNull TextPaint ds) {
                 super.updateDrawState(ds);
-                ds.setColor(getColor(R.color.primary));
+                ds.setColor(ContextCompat.getColor(requireContext(), R.color.primary));
                 ds.setUnderlineText(false);
             }
         };
@@ -196,18 +186,20 @@ public class RegisterActivity extends AppCompatActivity {
         binding.textLoginForm.setMovementMethod(LinkMovementMethod.getInstance());
         binding.textLoginForm.setHighlightColor(Color.TRANSPARENT);
     }
-    // Inside your Activity
-    private void hideKeyboard() {
-        // Find the currently focused view, so we can grab the correct window token from it.
-        View view = this.getCurrentFocus();
 
-        // If no view currently has focus, create a new one, just so we can grab a window token from it
+    private void hideKeyboard() {
+        View view = requireActivity().getCurrentFocus();
         if (view == null) {
-            view = new View(this);
+            view = new View(requireContext());
         }
 
-        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        InputMethodManager imm = (InputMethodManager) requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
+    }
 }
